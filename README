@@ -64,7 +64,7 @@ Maven Artifacts
   <dependency>
     <groupId>com.lambdaworks</groupId>
     <artifactId>scrypt</artifactId>
-    <version>1.4.0</version>
+    <version>1.4.0.XOOM</version>
   </dependency>
 
 Building Native Implementation
