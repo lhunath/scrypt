@@ -3,6 +3,8 @@
 package com.lambdaworks.crypto;
 
 import com.lambdaworks.jni.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -21,11 +23,27 @@ import static java.lang.System.arraycopy;
  * @author  Will Glozer
  */
 public class SCrypt {
+
+    private final static Logger LOGGER = LoggerFactory.getLogger(SCrypt.class);
+
     private static final boolean native_library_loaded;
 
     static {
         LibraryLoader loader = LibraryLoaders.loader();
         native_library_loaded = loader.load("scrypt", true);
+
+        if(native_library_loaded) {
+            LOGGER.info("Native library loaded.");
+        } else {
+            LOGGER.error("Using pure java implementation.");
+        }
+    }
+
+    /**
+     * Reports whether the native scrypt library has been loaded.
+     */
+    public static boolean isNativeLibraryLoaded() {
+        return native_library_loaded;
     }
 
     /**

@@ -5,7 +5,7 @@
 
   <groupId>com.lambdaworks</groupId>
   <artifactId>scrypt</artifactId>
-  <version>1.4.0.XOOM</version>
+  <version>1.4.1.XOOM</version>
 
   <packaging>jar</packaging>
 
@@ -35,6 +35,22 @@
   </developers>
 
   <dependencies>
+   <dependency>
+     <groupId>com.google.guava</groupId>
+     <artifactId>guava</artifactId>
+     <version>18.0</version>
+   </dependency>
+   <dependency>
+     <groupId>org.slf4j</groupId>
+     <artifactId>slf4j-api</artifactId>
+     <version>1.7.7</version>
+   </dependency>
+   <dependency>
+     <groupId>ch.qos.logback</groupId>
+     <artifactId>logback-classic</artifactId>
+     <version>1.1.2</version>
+     <scope>test</scope>
+   </dependency>
    <dependency>
      <groupId>junit</groupId>
      <artifactId>junit</artifactId>
@@ -67,7 +83,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jarsigner-plugin</artifactId>
-        <version>1.2</version>
+        <version>1.4</version>
         <executions>
           <execution>
             <id>sign</id>
@@ -112,6 +128,9 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-gpg-plugin</artifactId>
         <version>1.1</version>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
         <executions>
           <execution>
             <id>sign-artifacts</id>

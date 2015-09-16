@@ -2,7 +2,15 @@
 
 package com.lambdaworks.jni;
 
-import java.io.*;
+import com.google.common.base.Splitter;
+import com.google.common.io.ByteStreams;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +28,13 @@ import java.util.jar.JarFile;
  * @author Will Glozer
  */
 public class JarLibraryLoader implements LibraryLoader {
+
+    private final static Logger LOGGER = LoggerFactory.getLogger(JarLibraryLoader.class);
+
+    private static final String NESTED_DELIMITER = "!";
+    private static final Splitter SPLITTER = Splitter.on(NESTED_DELIMITER);
+    private static final int NESTED_JAR_INDEX = 1;
+
     private final CodeSource codeSource;
     private final String libraryPath;
 
@@ -52,31 +67,76 @@ public class JarLibraryLoader implements LibraryLoader {
      * @return true if the library was successfully loaded.
      */
     public boolean load(String name, boolean verify) {
-        boolean loaded = false;
+
+        File temporary = null;
 
         try {
-            Platform platform = Platform.detect();
-            JarFile jar = new JarFile(codeSource.getLocation().getPath(), verify);
-            try {
-                for (String path : libCandidates(platform, name)) {
-                    JarEntry entry = jar.getJarEntry(path);
-                    if (entry == null) continue;
 
-                    File lib = extract(name, jar.getInputStream(entry));
-                    System.load(lib.getAbsolutePath());
-                    lib.delete();
+            String location = codeSource.getLocation().getPath();
 
-                    loaded = true;
-                    break;
-                }
-            } finally {
-                jar.close();
+            if(location.contains(NESTED_DELIMITER)) {
+
+                temporary = File.createTempFile("scrypt-temporary", ".jar");
+
+                // Nested Jar File.
+
+                List<String> strings = SPLITTER.splitToList(location);
+
+                LOGGER.debug("Extracting nested jar file to {}.", temporary.getPath());
+
+                ByteStreams.copy(getClass().getResourceAsStream(strings.get(NESTED_JAR_INDEX)),
+                        new FileOutputStream(temporary));
+                JarFile jar = new JarFile(temporary, verify);
+
+                return loadLibrary(name, jar);
+
             }
-        } catch (Throwable e) {
-            loaded = false;
-        }
 
-        return loaded;
+            return loadLibrary(name, new JarFile(codeSource.getLocation().getPath(), verify));
+
+        } catch (Throwable e) {
+
+            LOGGER.error("Error loading native library.", e);
+
+            return false;
+
+        } finally {
+
+            if(temporary != null) {
+
+                // Clean up the temporarily extracted copy of the jar file.
+
+                boolean deleted = temporary.delete();
+
+                if(!deleted) {
+                    LOGGER.warn("Failed to delete temporary jar file {}.", temporary.getPath());
+                }
+
+            }
+
+        }
+    }
+
+    private boolean loadLibrary(String name, JarFile jar) throws Exception {
+        try {
+            Platform platform = Platform.detect();
+            for (String path : libCandidates(platform, name)) {
+                JarEntry entry = jar.getJarEntry(path);
+                if (entry == null) {
+                    continue;
+                }
+                File lib = extract(name, jar.getInputStream(entry));
+                System.load(lib.getAbsolutePath());
+                boolean deleted = lib.delete();
+                if(!deleted) {
+                    LOGGER.warn("Failed to delete temporary library file {}.", lib.getPath());
+                }
+                return true;
+            }
+        } finally {
+            jar.close();
+        }
+        return false;
     }
 
     /**
