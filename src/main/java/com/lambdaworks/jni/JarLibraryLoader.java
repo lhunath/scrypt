@@ -68,16 +68,19 @@ public class JarLibraryLoader implements LibraryLoader {
      */
     public boolean load(String name, boolean verify) {
 
+        File temporary = null;
+
         try {
 
             String location = codeSource.getLocation().getPath();
 
             if(location.contains(NESTED_DELIMITER)) {
 
+                temporary = File.createTempFile("scrypt-temporary", ".jar");
+
                 // Nested Jar File.
 
                 List<String> strings = SPLITTER.splitToList(location);
-                File temporary = File.createTempFile("temporary", ".jar");
 
                 LOGGER.debug("Extracting nested jar file to {}.", temporary.getPath());
 
@@ -85,17 +88,7 @@ public class JarLibraryLoader implements LibraryLoader {
                         new FileOutputStream(temporary));
                 JarFile jar = new JarFile(temporary, verify);
 
-                boolean loaded = loadLibrary(name, jar);
-
-                // Clean up the temporarily extracted copy of the jar file.
-
-                boolean deleted = temporary.delete();
-
-                if(!deleted) {
-                    LOGGER.warn("Failed to delete temporary jar file {}.", temporary.getPath());
-                }
-
-                return loaded;
+                return loadLibrary(name, jar);
 
             }
 
@@ -106,6 +99,20 @@ public class JarLibraryLoader implements LibraryLoader {
             LOGGER.error("Error loading native library.", e);
 
             return false;
+
+        } finally {
+
+            if(temporary != null) {
+
+                // Clean up the temporarily extracted copy of the jar file.
+
+                boolean deleted = temporary.delete();
+
+                if(!deleted) {
+                    LOGGER.warn("Failed to delete temporary jar file {}.", temporary.getPath());
+                }
+
+            }
 
         }
     }
