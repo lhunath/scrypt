@@ -5,13 +5,13 @@
 
   <groupId>com.lambdaworks</groupId>
   <artifactId>scrypt</artifactId>
-  <version>1.4.0</version>
+  <version>1.4.1.XOOM</version>
 
   <packaging>jar</packaging>
 
   <name>scrypt</name>
   <description>Java implementation of scrypt</description>
-  <url>http://github.com/wg/scrypt</url>
+  <url>http://github.com/xoom/scrypt</url>
 
   <licenses>
     <license>
@@ -26,9 +26,31 @@
       <id>will</id>
       <name>Will Glozer</name>
     </developer>
+	  <developer>
+		  <id>rlubbat</id>
+		  <name>Ramsey Lubbat</name>
+		  <organization>Xoom</organization>
+		  <organizationUrl>https://www.xoom.com</organizationUrl>
+	  </developer>
   </developers>
 
   <dependencies>
+   <dependency>
+     <groupId>com.google.guava</groupId>
+     <artifactId>guava</artifactId>
+     <version>18.0</version>
+   </dependency>
+   <dependency>
+     <groupId>org.slf4j</groupId>
+     <artifactId>slf4j-api</artifactId>
+     <version>1.7.7</version>
+   </dependency>
+   <dependency>
+     <groupId>ch.qos.logback</groupId>
+     <artifactId>logback-classic</artifactId>
+     <version>1.1.2</version>
+     <scope>test</scope>
+   </dependency>
    <dependency>
      <groupId>junit</groupId>
      <artifactId>junit</artifactId>
@@ -61,7 +83,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jarsigner-plugin</artifactId>
-        <version>1.3.2</version>
+        <version>1.4</version>
         <executions>
           <execution>
             <id>sign</id>
@@ -106,6 +128,9 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-gpg-plugin</artifactId>
         <version>1.1</version>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
         <executions>
           <execution>
             <id>sign-artifacts</id>
@@ -116,7 +141,34 @@
           </execution>
         </executions>
       </plugin>
-    </plugins>
+
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-source-plugin</artifactId>
+			<version>2.1.2</version>
+			<executions>
+				<execution>
+					<goals>
+						<goal>jar</goal>
+					</goals>
+				</execution>
+			</executions>
+		</plugin>
+
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-jar-plugin</artifactId>
+			<version>2.4</version>
+			<configuration>
+				<archive>
+					<manifestEntries>
+						<Implementation-Version>${project.version}</Implementation-Version>
+					</manifestEntries>
+				</archive>
+			</configuration>
+		</plugin>
+
+	</plugins>
   </build>
 
   <properties>
@@ -124,9 +176,9 @@
   </properties>
 
   <scm>
-    <connection>scm:git:git://github.com/wg/scrypt.git</connection>
-    <developerConnection>scm:git:git://github.com/wg/scrypt.git</developerConnection>
-    <url>http://github.com/wg/scrypt</url>
+    <connection>scm:git:git://github.com/xoom/scrypt.git</connection>
+    <developerConnection>scm:git:git://github.com/xoom/scrypt.git</developerConnection>
+    <url>http://github.com/xoom/scrypt</url>
   </scm>
 
   <distributionManagement>
